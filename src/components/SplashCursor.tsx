@@ -63,18 +63,31 @@ export default function SplashCursor({
       };
     }
 
+    // Touch-only devices (e.g. mobile phones) don't have cursor hover and fluid computation causes scroll hitching
+    const isTouchOnly =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(pointer: coarse)').matches &&
+      !window.matchMedia('(pointer: fine)').matches;
+    if (isTouchOnly) return;
+
+    // Detect low-end hardware (e.g. integrated GPUs, <= 4 CPU cores, small screens)
+    const isLowEnd =
+      typeof navigator !== 'undefined' &&
+      ((navigator.hardwareConcurrency != null && navigator.hardwareConcurrency <= 4) ||
+        (typeof window !== 'undefined' && window.innerWidth < 768));
+
     let config = {
-      SIM_RESOLUTION,
-      DYE_RESOLUTION,
+      SIM_RESOLUTION: isLowEnd ? Math.min(SIM_RESOLUTION, 64) : Math.min(SIM_RESOLUTION, 128),
+      DYE_RESOLUTION: isLowEnd ? Math.min(DYE_RESOLUTION, 512) : Math.min(DYE_RESOLUTION, 1024),
       CAPTURE_RESOLUTION,
       DENSITY_DISSIPATION,
       VELOCITY_DISSIPATION,
       PRESSURE,
-      PRESSURE_ITERATIONS,
+      PRESSURE_ITERATIONS: isLowEnd ? Math.min(PRESSURE_ITERATIONS, 8) : Math.min(PRESSURE_ITERATIONS, 14),
       CURL,
       SPLAT_RADIUS,
       SPLAT_FORCE,
-      SHADING,
+      SHADING: isLowEnd ? false : SHADING,
       COLOR_UPDATE_SPEED,
       PAUSED: false,
       BACK_COLOR,
@@ -714,7 +727,10 @@ export default function SplashCursor({
     let colorUpdateTimer = 0.0;
 
     function updateFrame() {
-      if (!isActive) return;
+      if (!isActive || (typeof document !== 'undefined' && document.hidden)) {
+        animationFrameId.current = null;
+        return;
+      }
       const dt = calcDeltaTime();
       if (resizeCanvas()) initFramebuffers();
       updateColors(dt);
@@ -981,7 +997,8 @@ export default function SplashCursor({
     }
 
     function scaleByPixelRatio(input: number) {
-      const pixelRatio = window.devicePixelRatio || 1;
+      const maxDpr = isLowEnd ? 1.0 : 1.5;
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, maxDpr);
       return Math.floor(input * pixelRatio);
     }
 
@@ -1042,11 +1059,24 @@ export default function SplashCursor({
       updatePointerUpData(pointer);
     }
 
+    function handleVisibilityChange() {
+      if (document.hidden) {
+        if (animationFrameId.current) {
+          cancelAnimationFrame(animationFrameId.current);
+          animationFrameId.current = null;
+        }
+      } else if (isActive && !animationFrameId.current) {
+        lastUpdateTime = Date.now();
+        animationFrameId.current = requestAnimationFrame(updateFrame);
+      }
+    }
+
     window.addEventListener('mousedown', handleMouseDown, { passive: true });
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     window.addEventListener('touchstart', handleTouchStart, { passive: true });
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
     window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     updateFrame();
 
@@ -1063,6 +1093,7 @@ export default function SplashCursor({
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [
     SIM_RESOLUTION,

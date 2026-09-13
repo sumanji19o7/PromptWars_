@@ -12,13 +12,20 @@ export function Persistent3DBackground() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollRatio, setScrollRatio] = useState(0);
 
-  // Monitor document-level scroll ratio
+  // Monitor document-level scroll ratio with requestAnimationFrame throttling
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
-      if (totalScroll > 0) {
-        const current = window.scrollY / totalScroll;
-        setScrollRatio(Math.min(Math.max(current, 0), 1));
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
+          if (totalScroll > 0) {
+            const current = window.scrollY / totalScroll;
+            setScrollRatio(Math.min(Math.max(current, 0), 1));
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 
@@ -36,22 +43,28 @@ export function Persistent3DBackground() {
     const width = window.innerWidth;
     const height = window.innerHeight;
 
+    // Detect low-end hardware or mobile to optimize fillrate
+    const isLowEnd =
+      typeof navigator !== 'undefined' &&
+      ((navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) ||
+        width < 768);
+
     // Scene & Camera
     const scene = new THREE.Scene();
-    // Soft subtle fog for depth
     scene.fog = new THREE.FogExp2(0x0a0b10, 0.022);
 
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
     camera.position.set(0, 0.8, 7.2);
 
-    // Renderer
+    // Renderer: Cap pixelRatio to 1.0 on low-end, 1.5 on high-end to save GPU fillrate
+    const maxPixelRatio = isLowEnd ? 1.0 : 1.5;
     const renderer = new THREE.WebGLRenderer({
-      antialias: true,
+      antialias: !isLowEnd,
       alpha: true,
       powerPreference: 'high-performance',
     });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxPixelRatio));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.4;
     container.appendChild(renderer.domElement);
@@ -212,8 +225,8 @@ export function Persistent3DBackground() {
       backgroundBooksGroup.add(bMesh);
     }
 
-    // --- Floating Glowing Knowledge Particles & Flying Pages ---
-    const particlesCount = 75;
+    // --- Floating Glowing Knowledge Particles & Flying Pages (Scaled for hardware) ---
+    const particlesCount = isLowEnd ? 32 : 65;
     const particlesGeo = new THREE.BufferGeometry();
     const particlePositions = new Float32Array(particlesCount * 3);
     const particleScales = new Float32Array(particlesCount);
@@ -370,10 +383,24 @@ export function Persistent3DBackground() {
       renderer.render(scene, camera);
     };
 
-    animate();
+    let isTabVisible = true;
+    const handleVisibilityChange = () => {
+      isTabVisible = !document.hidden;
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    const safeAnimate = () => {
+      animationFrameId = requestAnimationFrame(safeAnimate);
+      if (isTabVisible) {
+        animate();
+      }
+    };
+
+    safeAnimate();
 
     return () => {
       cancelAnimationFrame(animationFrameId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('resize', handleResize);
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);

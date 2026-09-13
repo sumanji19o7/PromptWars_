@@ -72,7 +72,8 @@ export function ClickSpark({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let animationId: number;
+    let animationId: number | null = null;
+    let isRunning = false;
 
     const draw = (timestamp: number) => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -104,21 +105,23 @@ export function ClickSpark({
         return true;
       });
 
-      animationId = requestAnimationFrame(draw);
+      if (sparksRef.current.length > 0) {
+        animationId = requestAnimationFrame(draw);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        isRunning = false;
+        animationId = null;
+      }
     };
 
-    animationId = requestAnimationFrame(draw);
-
-    return () => {
-      cancelAnimationFrame(animationId);
+    const startAnimation = () => {
+      if (!isRunning) {
+        isRunning = true;
+        animationId = requestAnimationFrame(draw);
+      }
     };
-  }, [sparkColor, sparkSize, sparkRadius, duration, easeFunc, extraScale]);
 
-  useEffect(() => {
     const handleClick = (e: MouseEvent) => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
@@ -132,6 +135,7 @@ export function ClickSpark({
       }));
 
       sparksRef.current.push(...newSparks);
+      startAnimation();
     };
 
     // Capture phase catches every click on any button, card, link, or empty space
@@ -139,8 +143,11 @@ export function ClickSpark({
 
     return () => {
       window.removeEventListener('click', handleClick, true);
+      if (animationId !== null) {
+        cancelAnimationFrame(animationId);
+      }
     };
-  }, [sparkCount]);
+  }, [sparkColor, sparkSize, sparkRadius, duration, easeFunc, extraScale, sparkCount]);
 
   return (
     <>
