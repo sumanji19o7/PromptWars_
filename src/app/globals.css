@@ -1,26 +1,338 @@
+@import url("https://fonts.googleapis.com/css2?family=Patrick+Hand&family=IBM+Plex+Mono:wght@400;500&display=swap");
 @import "tailwindcss";
 
+@theme {
+  --font-sans: "Patrick Hand", cursive, sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a0b10;
+  --foreground: #e3e1e9;
+  --surface: #121318;
+  --surface-container-lowest: #090a0f;
+  --surface-container-low: #121520;
+  --surface-container: #181c2b;
+  --surface-container-high: #1f2438;
+  --surface-container-highest: #252b40;
+  --primary-container: #00f2fe;
+  --secondary-container: #e20476;
+  --outline-variant: #3a494b;
+  --on-surface-variant: #b9cacb;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  overflow-y: auto !important;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  min-height: 100vh;
+  font-family: "Patrick Hand", cursive, sans-serif;
 }
 
 body {
-  background: var(--background);
+  overflow-y: auto !important;
+  background-color: transparent !important;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  font-family: "Patrick Hand", cursive, sans-serif !important;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+}
+
+button {
+  border-radius: 9999px;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease, background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+
+button:not(.no-enlarge):not(.btn-spring):hover {
+  transform: translateY(-2px) scale(1.045);
+}
+
+button:not(.no-enlarge):not(.btn-spring):active {
+  transform: translateY(0.5px) scale(0.96);
+}
+
+/* Card-like buttons retain generous card corners instead of full pills */
+button.flex-col,
+button.btn-card,
+button[class*="rounded-2xl"],
+button[class*="rounded-3xl"] {
+  border-radius: 1.25rem !important;
+}
+
+button.flex-col:not(.no-enlarge):hover,
+button.btn-card:not(.no-enlarge):hover {
+  transform: translateY(-2px) scale(1.02);
+}
+
+.font-sans {
+  font-family: "Patrick Hand", cursive, sans-serif !important;
+}
+
+.font-mono, code, pre, kbd {
+  font-family: "IBM Plex Mono", monospace !important;
+}
+
+spline-viewer::part(logo) {
+  display: none !important;
+}
+
+/* Cyberpunk Grid & Glow Tokens */
+.cyber-grid {
+  background-image: linear-gradient(to right, rgba(0, 242, 254, 0.04) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(0, 242, 254, 0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.cyber-glow-cyan {
+  box-shadow: 0 0 25px -5px rgba(0, 242, 254, 0.35);
+}
+
+.cyber-glow-magenta {
+  box-shadow: 0 0 25px -5px rgba(226, 4, 118, 0.35);
+}
+
+.glow-text-cyan {
+  text-shadow: 0 0 14px rgba(0, 242, 254, 0.6);
+}
+
+.glow-text-pink {
+  text-shadow: 0 0 14px rgba(226, 4, 118, 0.6);
+}
+
+.neon-glow-cyan {
+  text-shadow: 0 0 10px rgba(0, 242, 254, 0.6), 0 0 20px rgba(0, 242, 254, 0.4);
+}
+
+.neon-glow-magenta {
+  text-shadow: 0 0 10px rgba(226, 4, 118, 0.6), 0 0 20px rgba(226, 4, 118, 0.4);
+}
+
+.neon-glow-amber {
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.6), 0 0 20px rgba(245, 158, 11, 0.4);
+}
+
+.cyber-badge {
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+}
+
+.scanline {
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0),
+    rgba(255,255,255,0) 50%,
+    rgba(0, 242, 254, 0.03) 50%,
+    rgba(0, 242, 254, 0.03)
+  );
+  background-size: 100% 4px;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #090a0f;
+}
+::-webkit-scrollbar-thumb {
+  background: #1a2236;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 242, 254, 0.2);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00f2fe;
+}
+
+/* Glassmorphism Classes with transparent opacities so 3D background shines through */
+.cyber-glass {
+  background: rgba(18, 21, 32, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 242, 254, 0.22);
+}
+
+.cyber-glass-card {
+  background: rgba(18, 21, 32, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 242, 254, 0.22);
+}
+
+.cyber-glass-subtle {
+  background: rgba(18, 21, 32, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel {
+  background: rgba(18, 21, 32, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 242, 254, 0.2);
+}
+
+
+/* =========================================================
+   Spring Button System with Aesthetic Largement & Specular Lustre
+   Cubic-bezier(0.34, 1.56, 0.64, 1) spring physics + sheen sweep
+   ========================================================= */
+.btn-spring {
+  position: relative;
+  overflow: hidden;
+  border-radius: 9999px;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+  isolation: isolate;
+}
+
+/* Card buttons retain generous rounded corners */
+.btn-spring.flex-col,
+.btn-spring.btn-card {
+  border-radius: 1.25rem !important;
+}
+
+/* 45deg color sweep */
+.btn-spring::before {
+  content: '';
+  position: absolute;
+  width: 140%;
+  height: 180%;
+  top: 110%;
+  left: -130%;
+  transform: rotate(45deg);
+  transition: all 0.38s cubic-bezier(0.310, -0.105, 0.430, 1.590);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Specular Sheen / Light-Beam Shimmer ("Lustre" effect) */
+.btn-spring::after {
+  content: '';
+  position: absolute;
+  top: -60%;
+  left: -130%;
+  width: 60%;
+  height: 220%;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.45) 50%,
+    rgba(255, 255, 255, 0.05) 75%,
+    transparent 100%
+  );
+  transform: rotate(25deg);
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  transition: left 0.65s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.25s ease;
+}
+
+.btn-spring svg,
+.btn-spring span,
+.btn-spring .btn-content {
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Hover Largement & Spring Elevation */
+.btn-spring:hover,
+.btn-spring:focus-visible {
+  transform: translateY(-2.5px) scale(1.055);
+}
+
+.btn-spring.flex-col:hover,
+.btn-spring.btn-card:hover {
+  transform: translateY(-2.5px) scale(1.02);
+}
+
+/* Tactile Active Press */
+.btn-spring:active {
+  transform: translateY(0.5px) scale(0.96);
+}
+
+/* Slide in color wave and light sheen */
+.btn-spring:hover::before,
+.btn-spring:focus-visible::before {
+  top: -30%;
+  left: -20%;
+}
+
+.btn-spring:hover::after,
+.btn-spring:focus-visible::after {
+  left: 160%;
+  opacity: 1;
+}
+
+.btn-spring:hover svg,
+.btn-spring:focus-visible svg {
+  transform: scale(1.15);
+}
+
+/* Cyan Variant */
+.btn-spring-cyan::before {
+  background-color: #00f2fe;
+}
+.btn-spring-cyan:hover,
+.btn-spring-cyan:focus-visible {
+  color: #000000 !important;
+  box-shadow:
+    0 0 25px rgba(0, 242, 254, 0.65),
+    0 8px 24px -4px rgba(0, 242, 254, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+.btn-spring-cyan:hover svg,
+.btn-spring-cyan:focus-visible svg {
+  color: #000000 !important;
+}
+
+/* Magenta / Pink Variant */
+.btn-spring-magenta::before {
+  background-color: #e20476;
+}
+.btn-spring-magenta:hover,
+.btn-spring-magenta:focus-visible {
+  color: #ffffff !important;
+  box-shadow:
+    0 0 25px rgba(226, 4, 118, 0.65),
+    0 8px 24px -4px rgba(226, 4, 118, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.5);
+}
+.btn-spring-magenta:hover svg,
+.btn-spring-magenta:focus-visible svg {
+  color: #ffffff !important;
+}
+
+/* Dark / Glass Variant */
+.btn-spring-glass::before {
+  background-color: rgba(0, 242, 254, 0.25);
+}
+.btn-spring-glass:hover,
+.btn-spring-glass:focus-visible {
+  border-color: #00f2fe;
+  color: #ffffff !important;
+  box-shadow:
+    0 0 22px rgba(0, 242, 254, 0.4),
+    0 6px 18px -2px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+
+/* Amber / Exam Mode Variant */
+.btn-spring-amber::before {
+  background-color: #f59e0b;
+}
+.btn-spring-amber:hover,
+.btn-spring-amber:focus-visible {
+  color: #000000 !important;
+  box-shadow:
+    0 0 25px rgba(245, 158, 11, 0.65),
+    0 8px 24px -4px rgba(245, 158, 11, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+.btn-spring-amber:hover svg,
+.btn-spring-amber:focus-visible svg {
+  color: #000000 !important;
 }
